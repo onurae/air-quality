@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Air Quality Station</title>
+    <style>
+        html {
+            font-family: Helvetica;
+            display: inline-block;
+            margin: 0px auto;
+            text-align: center;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        td {
+            font-family: Helvetica;
+            font-size: 24px;
+            text-align: center;
+            color: #444444;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+
+        body {
+            margin-top: 50px;
+        }
+
+        h1 {
+            color: #444444;
+            margin: 50px auto 30px;
+        }
+
+        p {
+            font-size: 24px;
+            color: #444444;
+            margin-bottom: 10px;
+        }
+    </style>
+
+    <script>
+        setInterval(loadDoc, 5000);
+        function loadDoc() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    document.body.innerHTML = this.responseText
+                }
+            };
+            xhttp.open("GET", "/", true);
+            xhttp.send();
+        } 
+    </script>
+</head>
+
+<body style="background-image:
+    url('https://e0.pxfuel.com/wallpapers/395/605/desktop-wallpaper-the-two-types-of-river-waves-which-one-are-you-surfing-on-riverbreak-magazine-geometric-wave.jpg');
+    background-repeat: no-repeat;
+    background-size: auto;
+    background-position: center;">
+    <div id="data">
+        <h1>Air Quality Station</h1>
+        <table>
+            <tr>
+                <td><a
+                        href="https://www.broughtoneap.co.uk/wp-content/uploads/2020/09/Graph-Comfort-chartOnly.jpg">Temperature</a>
+                </td>
+                <td>%temperature% &deg;C</td>
+            </tr>
+            <tr>
+                <td><a
+                        href="https://www.aprilaire.com/images/default-source/default-album/charts/rh-chart.jpg">Humidity</a>
+                </td>
+                <td>%humidity% %%</td>
+            </tr>
+            <tr>
+                <td><a href="https://img-9gag-fun.9cache.com/photo/abvRMzX_460s.jpg">Pressure</a></td>
+                <td>%pressure% hPa</td>
+            </tr>
+            <tr>
+                <td><a href="https://veerle.duoh.com/images/sidenotes/PPM-table.png">Carbondioxide</a></td>
+                <td>%co2% ppm</td>
+            </tr>
+        </table>
+        <p style="color:rgb(180, 8, 8)"> %warnCo2%</p>
+    </div>
+</body>
+
+</html>
