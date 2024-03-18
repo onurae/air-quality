@@ -3,6 +3,7 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
     <title>Air Quality Station</title>
     <style>
         html {
@@ -45,18 +46,23 @@
     </style>
 
     <script>
-        setInterval(loadDoc, 5000);
-        function loadDoc() {
+        setInterval(updateData, 5000);
+        function updateData() {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-
-                    document.body.innerHTML = this.responseText
+                    var data = this.responseText.split(',');
+                    document.getElementById("id1").innerText = data[0] + " °C";
+                    document.getElementById("id2").innerText = data[1] + " %";
+                    document.getElementById("id3").innerText = data[2] + " hPa";
+                    document.getElementById("id4").innerText = data[3] + " ppm";
+                    document.getElementById("id5").innerText = data[3] >= 1000 ? "Ventilation required!" : "";
                 }
             };
-            xhttp.open("GET", "/", true);
+            xhttp.open("GET", "/data", true);
             xhttp.send();
-        } 
+        }
+        updateData();
     </script>
 </head>
 
@@ -69,27 +75,27 @@
         <h1>Air Quality Station</h1>
         <table>
             <tr>
-                <td><a
-                        href="https://www.broughtoneap.co.uk/wp-content/uploads/2020/09/Graph-Comfort-chartOnly.jpg">Temperature</a>
+                <td><a href="https://www.broughtoneap.co.uk/wp-content/uploads/2020/09/Graph-Comfort-chartOnly.jpg">Temperature</a>
                 </td>
-                <td>%temperature% &deg;C</td>
+                <td id="id1"></td>
             </tr>
             <tr>
-                <td><a
-                        href="https://www.aprilaire.com/images/default-source/default-album/charts/rh-chart.jpg">Humidity</a>
+                <td><a href="https://www.aprilaire.com/images/default-source/default-album/charts/rh-chart.jpg">Humidity</a>
                 </td>
-                <td>%humidity% %%</td>
+                <td id="id2"></td>
             </tr>
             <tr>
                 <td><a href="https://img-9gag-fun.9cache.com/photo/abvRMzX_460s.jpg">Pressure</a></td>
-                <td>%pressure% hPa</td>
+                <td id="id3"></td>
             </tr>
             <tr>
                 <td><a href="https://veerle.duoh.com/images/sidenotes/PPM-table.png">Carbondioxide</a></td>
-                <td>%co2% ppm</td>
+                <td id="id4"></td>
             </tr>
         </table>
-        <p style="color:rgb(180, 8, 8)"> %warnCo2%</p>
+        <p id="id5" style="color:rgb(180, 8, 8)"></p>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,700,0,0" />
+        <span class="material-symbols-outlined"> co2 </span>
     </div>
 </body>
 

@@ -10,7 +10,6 @@
 Adafruit_BME280 bme;
 SensirionI2CScd4x scd4x;
 uint16_t co2 = 0;
-uint16_t co2Limit = 1000;
 float temperatureSCD = 0.0f;
 float humiditySCD = 0.0f;
 float temperatureBME = 25.0f;
@@ -21,48 +20,6 @@ float pressureMSL = 1018.0f;
 const char *ssid = "";// Enter SSID here
 const char *password = "";// Enter Password here
 AsyncWebServer server(80);
-
-String processor(const String &var)
-{
-    if (var == "temperature")
-    {
-        return String(temperatureSCD);
-    }
-    else if (var == "humidity")
-    {
-        return String(humiditySCD);
-    }
-    else if (var == "pressure")
-    {
-        return String(pressureBME);
-    }
-    else if (var == "altitude")
-    {
-        return String(altitude);
-    }
-    else if (var == "co2")
-    {
-        return String(co2);
-    }
-    else if (var == "warnCo2")
-    {
-        if (co2 >= co2Limit)
-        {
-            return "Ventilation required!";
-        }
-    }
-    return String();
-}
-
-void onRequest(AsyncWebServerRequest *request)
-{
-    request->send(SPIFFS, "/air.html", String(), false, processor);
-}
-
-void notFound(AsyncWebServerRequest *request)
-{
-    request->send(404, "text/plain", "Not found");
-}
 
 void setup()
 {
@@ -121,8 +78,16 @@ void setup()
     Serial.println("mDNS responder started.");
 
     // Server
-    server.on("/", HTTP_GET, onRequest);
-    server.onNotFound(notFound);
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/air.html"); });
+    server.onNotFound([](AsyncWebServerRequest *request)
+                      { request->send(404, "text/plain", "Not found"); });
+    server.on("/data", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send_P(200, "text/plain", (String(temperatureSCD) + "," + String(humiditySCD) + "," + String(pressureBME) + "," + String(co2)).c_str()); });
+    server.on("/chart-temperature", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/chart-temperature.html", String()); });
+    server.on("/chart-carbondioxide", HTTP_GET, [](AsyncWebServerRequest *request)
+              { request->send(SPIFFS, "/chart-carbondioxide.html", String()); });
     server.begin();
     Serial.println("HTTP server started.");
 
@@ -167,7 +132,7 @@ void loop()
     Serial.println(pressureBME);
     delay(5000);
 
-    if (co2 >= co2Limit)
+    if (co2 >= 1000)
     {
         digitalWrite(5, HIGH);
         digitalWrite(7, LOW);
