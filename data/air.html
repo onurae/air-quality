@@ -4,6 +4,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+    <script src="https://code.highcharts.com/highcharts.js"></script>
     <title>Air Quality Station</title>
     <style>
         html {
@@ -44,48 +45,28 @@
             margin-bottom: 10px;
         }
     </style>
-
-    <script>
-        setInterval(updateData, 5000);
-        function updateData() {
-            var xhttp = new XMLHttpRequest();
-            xhttp.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    var data = this.responseText.split(',');
-                    document.getElementById("id1").innerText = data[0] + " °C";
-                    document.getElementById("id2").innerText = data[1] + " %";
-                    document.getElementById("id3").innerText = data[2] + " hPa";
-                    document.getElementById("id4").innerText = data[3] + " ppm";
-                    document.getElementById("id5").innerText = data[3] >= 1000 ? "Ventilation required!" : "";
-                }
-            };
-            xhttp.open("GET", "/data", true);
-            xhttp.send();
-        }
-        updateData();
-    </script>
 </head>
 
-<body style="background-image:
-    url('https://e0.pxfuel.com/wallpapers/395/605/desktop-wallpaper-the-two-types-of-river-waves-which-one-are-you-surfing-on-riverbreak-magazine-geometric-wave.jpg');
-    background-repeat: no-repeat;
-    background-size: auto;
-    background-position: center;">
+<body>
     <div id="data">
         <h1>Air Quality Station</h1>
         <table>
             <tr>
-                <td><a href="https://www.broughtoneap.co.uk/wp-content/uploads/2020/09/Graph-Comfort-chartOnly.jpg">Temperature</a>
+                <td><a
+                        href="https://www.broughtoneap.co.uk/wp-content/uploads/2020/09/Graph-Comfort-chartOnly.jpg">Temperature</a>
                 </td>
                 <td id="id1"></td>
             </tr>
             <tr>
-                <td><a href="https://www.aprilaire.com/images/default-source/default-album/charts/rh-chart.jpg">Humidity</a>
+                <td><a
+                        href="https://www.aprilaire.com/images/default-source/default-album/charts/rh-chart.jpg">Humidity</a>
                 </td>
                 <td id="id2"></td>
             </tr>
             <tr>
-                <td><a href="https://img-9gag-fun.9cache.com/photo/abvRMzX_460s.jpg">Pressure</a></td>
+                <td><a
+                        href="http://www.quickmeme.com/img/cc/cc519950e6716d1f752b38dad7fe3b79bd9e4968803e1088f26cc60480db33a7.jpg">Pressure</a>
+                </td>
                 <td id="id3"></td>
             </tr>
             <tr>
@@ -94,9 +75,176 @@
             </tr>
         </table>
         <p id="id5" style="color:rgb(180, 8, 8)"></p>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,700,0,0" />
-        <span class="material-symbols-outlined"> co2 </span>
+        <br>
+        <label for="data-dropdown">Chart:</label>
+        <select name="data-dropdown" id="data-dropdown">
+            <option value="t">Temperature</option>
+            <option value="h">Humidity</option>
+            <option value="p">Pressure</option>
+            <option value="c">Carbondioxide</option>
+        </select>
+        <label for="time-dropdown">Time:</label>
+        <select name="time-dropdown" id="time-dropdown">
+            <option value="rt">Real-Time</option>
+            <option value="1h" selected>1h</option>
+            <option value="8h">8h</option>
+            <option value="24h">24h</option>
+        </select>
+        <button type="button" onclick="Draw()">Draw</button>
+        <br>
+        <br>
+        <div id="chart" style="font-family:Arial; min-width: 300px; max-width: 1080px; margin: 0 auto;"
+            class="container"></div>
     </div>
 </body>
+
+<script>
+    var chart = null;
+    var isRealTimeOn = false;
+    var iRealTime = 0;
+    setInterval(UpdateData, 5000);
+    function UpdateData() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var data = this.responseText.split(',');
+                document.getElementById("id1").innerText = data[0] + " °C";
+                document.getElementById("id2").innerText = data[1] + " %";
+                document.getElementById("id3").innerText = data[2] + " hPa";
+                document.getElementById("id4").innerText = data[3] + " ppm";
+                document.getElementById("id5").innerText = data[3] >= 1000 ? "Ventilation required!" : "";
+                if (chart != null && isRealTimeOn == true) {
+                    var x = (new Date()).getTime(),
+                        y = parseFloat(data[iRealTime]);
+                    if (chart.series[0].data.length >= 60) {
+                        chart.series[0].addPoint([x, y], true, true, true);
+                    } else {
+                        chart.series[0].addPoint([x, y], true, false, true);
+                    }
+                }
+            }
+        };
+        xhttp.open("GET", "/data", true);
+        xhttp.send();
+    }
+    UpdateData();
+    Highcharts.setOptions({
+        time: {
+            timezoneOffset: -3 * 60
+        }
+    });
+    function Draw() {
+        if (chart != null) {
+            isRealTimeOn = false;
+            chart.destroy();
+            chart = null;
+        }
+        var ddd = document.getElementById("data-dropdown");
+        var tdd = document.getElementById("time-dropdown");
+        CreateChart(ddd.options[ddd.selectedIndex].value, tdd.options[tdd.selectedIndex].value);
+    }
+    function CreateChart(dataDropdown, timeDropdown) {
+        var titleText;
+        var yAxisText;
+        if (dataDropdown == "t") {
+            titleText = "Temperature";
+            yAxisText = "Temperature (°C)";
+            iRealTime = 0;
+        }
+        else if (dataDropdown == "h") {
+            titleText = "Humidity";
+            yAxisText = "Humidity (%)";
+            iRealTime = 1;
+        }
+        else if (dataDropdown == "p") {
+            titleText = "Pressure";
+            yAxisText = "Pressure (hPa)";
+            iRealTime = 2;
+        }
+        else if (dataDropdown == "c") {
+            titleText = "Carbondioxide";
+            yAxisText = "Carbondioxide (ppm)";
+            iRealTime = 3;
+        }
+        chart = Highcharts.chart('chart', {
+            chart: {
+                type: 'spline',
+                renderTo: 'chart'
+            },
+            title: { text: titleText },
+            xAxis: {
+                type: 'datetime',
+                dateTimeLabelFormats: { second: '%H:%M:%S' }
+            },
+            yAxis: {
+                title: { text: yAxisText }
+            },
+            series: [{
+                showInLegend: false,
+                data: []
+            }],
+            plotOptions: {
+                spline: {
+                    marker: {
+                        radius: 4,
+                        lineColor: '#666666',
+                        lineWidth: 1
+                    },
+                    dataLabels: { enabled: false }
+                },
+                series: {
+                    animation: {
+                        duration: 2000
+                    },
+                    color: '#059e8a'
+                }
+            },
+            credits: { enabled: false }
+        });
+
+        if (timeDropdown == "rt") {
+            isRealTimeOn = true;
+        }
+        else {
+            isRealTimeOn = false;
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    var data = this.responseText.split(',');
+                    var x = (new Date()).getTime();
+                    var length;
+                    if (timeDropdown == "1h") {
+                        length = data.length >= 60 ? 60 : data.length;
+                    }
+                    else if (timeDropdown == "8h") {
+                        length = data.length >= 60 * 8 ? 60 * 8 : data.length;
+                    }
+                    else if (timeDropdown == "24h") {
+                        length = data.length >= 60 * 24 ? 60 * 24 : data.length;
+                    }
+                    for (let i = 0; i < length; i++) {
+                        y = parseFloat(data[data.length - 1 - i]);
+                        var dataIntervalSec = 60; // 1min.
+                        chart.series[0].addPoint([x - i * dataIntervalSec * 1000, y], false, false, true);
+                    }
+                }
+                chart.redraw(true);
+            }
+            if (dataDropdown == "t") {
+                xhttp.open("GET", "/chart-temperature", true);
+            }
+            else if (dataDropdown == "h") {
+                xhttp.open("GET", "/chart-humidity", true);
+            }
+            else if (dataDropdown == "p") {
+                xhttp.open("GET", "/chart-pressure", true);
+            }
+            else if (dataDropdown == "c") {
+                xhttp.open("GET", "/chart-co2", true);
+            }
+            xhttp.send();
+        }
+    }
+</script>
 
 </html>
