@@ -9,7 +9,7 @@ It is an indoor air quality monitoring and logging device that measures temperat
 - 330ohm Resistors
 
 <p align="left">
-  <img src="images/3.JPG" width="500">
-  <img src="images/2.JPG" width="500"><br>
+  <img src="images/3.JPG" width="400">
+  <img src="images/2.JPG" width="400"><br>
   <img src="images/1.png" width="1095">
 </p>
