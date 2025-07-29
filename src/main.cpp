@@ -95,9 +95,10 @@ void setup()
     while (WiFi.status() != WL_CONNECTED) // Check wi-fi is connected to wi-fi network.
     {
         digitalWrite(5, HIGH);
-        delay(1000);
+        delay(500);
         Serial.print(".");
         digitalWrite(5, LOW);
+        delay(500);
     }
     Serial.println("");
     Serial.println("WiFi connected..!");
