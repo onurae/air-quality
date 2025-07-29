@@ -15,6 +15,7 @@
 #include <Adafruit_BME280.h>
 #include <SensirionI2CScd4x.h>
 #include "SPIFFS.h"
+#include <deque>
 
 Adafruit_BME280 bme;
 SensirionI2CScd4x scd4x;
@@ -79,6 +80,8 @@ void setup()
     if (error != 0)
     {
         Serial.println("SCD40 error!");
+        digitalWrite(5, HIGH);
+        digitalWrite(7, HIGH);
         while (true)
         {
             delay(1000);
@@ -91,8 +94,10 @@ void setup()
     WiFi.begin(ssid, password);           // Connect to your local wi-fi network.
     while (WiFi.status() != WL_CONNECTED) // Check wi-fi is connected to wi-fi network.
     {
+        digitalWrite(5, HIGH);
         delay(1000);
         Serial.print(".");
+        digitalWrite(5, LOW);
     }
     Serial.println("");
     Serial.println("WiFi connected..!");
@@ -103,6 +108,8 @@ void setup()
     if (!MDNS.begin("air"))
     {
         Serial.println("Error setting up MDNS responder!");
+        digitalWrite(5, HIGH);
+        digitalWrite(7, HIGH);
         while (true)
         {
             delay(1000);
@@ -134,6 +141,8 @@ void setup()
     if (SPIFFS.begin(true) == false)
     {
         Serial.println("SPIFFS error!");
+        digitalWrite(5, HIGH);
+        digitalWrite(7, HIGH);
         while (true)
         {
             delay(1000);
@@ -156,6 +165,8 @@ void loop()
     }
     else
     {
+        temperatureSCD -= 1.0f; // calibration.
+
         tBuf.push_back(temperatureSCD);
         hBuf.push_back(humiditySCD);
         pBuf.push_back(pressureBME);

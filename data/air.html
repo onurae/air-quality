@@ -112,7 +112,17 @@
                 document.getElementById("id2").innerText = data[1] + " %";
                 document.getElementById("id3").innerText = data[2] + " hPa";
                 document.getElementById("id4").innerText = data[3] + " ppm";
-                document.getElementById("id5").innerText = data[3] >= 1000 ? "Ventilation required!" : "";
+                var str;
+                if (data[3] >= 1200) {
+                    str = "Ventilation necessary!";
+                }
+                else if (data[3] >= 1000) {
+                    str = "Ventilation required!";
+                }
+                else {
+                    str = "";
+                }
+                document.getElementById("id5").innerText = str;
                 if (chart != null && isRealTimeOn == true) {
                     var x = (new Date()).getTime(),
                         y = parseFloat(data[iRealTime]);
